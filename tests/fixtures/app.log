@@ -1,0 +1,16 @@
+{"v":0,"level":20,"name":"gateway","hostname":"demo","pid":101,"time":"2026-01-15T00:00:00Z","msg":"listening on 127.0.0.1:8080","component":"api"}
+{"v":0,"level":30,"name":"gateway","hostname":"demo","pid":101,"time":"2026-01-15T00:00:10Z","msg":"request 42 completed in 15ms","component":"api","request_id":"req-42"}
+{"v":0,"level":40,"name":"gateway","hostname":"demo","pid":101,"time":"2026-01-15T00:00:50Z","msg":"connection from 10.0.0.8:443 delayed","component":"api"}
+{"v":0,"level":50,"name":"worker","hostname":"demo","pid":202,"time":"2026-01-15T00:01:01Z","msg":"job 100 failed on sled7","component":"jobs","job":"100"}
+{"v":0,"level":50,"name":"worker","hostname":"demo","pid":202,"time":"2026-01-15T00:01:02Z","msg":"job 101 failed on sled7","component":"jobs","job":"101"}
+{"v":0,"level":50,"name":"worker","hostname":"demo","pid":202,"time":"2026-01-15T00:01:03Z","msg":"job 102 failed on sled7","component":"jobs","job":"102"}
+{"v":0,"level":50,"name":"worker","hostname":"demo","pid":202,"time":"2026-01-15T00:01:04Z","msg":"job 103 failed on sled7","component":"jobs","job":"103"}
+{"v":0,"level":50,"name":"worker","hostname":"demo","pid":202,"time":"2026-01-15T00:01:05Z","msg":"job 104 failed on sled7","component":"jobs","job":"104"}
+{"v":0,"level":50,"name":"worker","hostname":"demo","pid":202,"time":"2026-01-15T00:01:06Z","msg":"job 105 failed on sled7","component":"jobs","job":"105"}
+{"v":0,"level":50,"name":"worker","hostname":"demo","pid":202,"time":"2026-01-15T00:01:07Z","msg":"job 106 failed on sled7","component":"jobs","job":"106"}
+{"v":0,"level":50,"name":"worker","hostname":"demo","pid":202,"time":"2026-01-15T00:01:08Z","msg":"job 107 failed on sled7","component":"jobs","job":"107"}
+{"v":0,"level":50,"name":"worker","hostname":"demo","pid":202,"time":"2026-01-15T00:01:09Z","msg":"job 108 failed on sled7","component":"jobs","job":"108"}
+{"v":0,"level":50,"name":"worker","hostname":"demo","pid":202,"time":"2026-01-15T00:01:10Z","msg":"job 109 failed on sled7","component":"jobs","job":"109"}
+{"v":0,"level":60,"name":"worker","hostname":"demo","pid":202,"time":"2026-01-15T00:02:00Z","msg":"worker 550e8400-e29b-41d4-a716-446655440000 stopped","component":"jobs"}
+this is not json
+{"v":0,"name":"broken","msg":"missing level"}
