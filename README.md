@@ -2,9 +2,44 @@
 
 [![CI](https://github.com/XanderXML-Bit/logsift/actions/workflows/ci.yml/badge.svg)](https://github.com/XanderXML-Bit/logsift/actions/workflows/ci.yml)
 
-`logsift` triages line-delimited bunyan JSON logs. It summarizes severity,
-groups, and templates. It filters raw matching records. It also finds dense
-warning and error windows.
+`logsift` helps operators triage line-delimited Bunyan JSON logs. It summarizes
+severity, groups, and templates, filters raw records, and finds bursts of
+warnings and errors.
+
+## Start quickly
+
+From a checkout with Rust 1.85 or later, run `summary` on the bundled log
+fixture. `--top 1` shows only the most frequent template.
+
+```sh
+cargo build --locked --release
+./target/release/logsift summary --top 1 tests/fixtures/app.log
+```
+
+```text
+Records: 14  Unparsed: 2
+Time range: 2026-01-15T00:00:00Z .. 2026-01-15T00:02:00Z
+
+Levels
+  trace        0
+  debug        1
+  info         1
+  warn         1
+  error       10
+  fatal        1
+
+Groups
+  api                             3
+  jobs                           11
+
+Top templates
+     10 error job <n> failed on sled<n>
+        first: 2026-01-15T00:01:01Z  last: 2026-01-15T00:01:10Z
+        example: job 100 failed on sled7
+
+Busiest warn-or-above minute
+  2026-01-15T00:01:00Z  10
+```
 
 ## Why it exists
 
@@ -16,8 +51,9 @@ has a large log file and three questions to answer:
 - Since when?
 - Which component is involved?
 
-`logsift` answers them in one streaming pass. It runs in bounded memory and
-needs no index, daemon, or network access.
+`logsift` answers them in one streaming pass. It caps the memory used to read
+individual lines and collect report data. It needs no index, daemon, or network
+access.
 
 It is built to be safe on hostile input. Log content is treated as untrusted:
 
@@ -45,13 +81,7 @@ cargo run --offline --locked -- --help
 
 Rust 1.85 or later is supported.
 
-## Start quickly
-
-```sh
-logsift summary production.log.gz
-logsift filter --level error --since 15m --group jobs production.log
-logsift bursts --window 5m --threshold 20 logs/
-```
+## Choose input sources
 
 Supply files, readable named streams, directories, or `-` for standard input.
 With no paths, logsift reads standard input. Directory walks use sorted entries
@@ -69,49 +99,6 @@ truncated gzip stream exits with status 1.
 `summary` reports usable records, unparsed lines, time range, levels, groups,
 templates, and the busiest warning-or-above minute. `--group-by FIELD` defaults
 to `component` and falls back to `name`. `--top N` defaults to 10.
-
-This is the actual output of the following command.
-
-```sh
-cargo run --offline --locked -- summary tests/fixtures/app.log
-```
-
-```text
-Records: 14  Unparsed: 2
-Time range: 2026-01-15T00:00:00Z .. 2026-01-15T00:02:00Z
-
-Levels
-  trace        0
-  debug        1
-  info         1
-  warn         1
-  error       10
-  fatal        1
-
-Groups
-  api                             3
-  jobs                           11
-
-Top templates
-     10 error job <n> failed on sled<n>
-        first: 2026-01-15T00:01:01Z  last: 2026-01-15T00:01:10Z
-        example: job 100 failed on sled7
-      1 warn  connection from <ip> delayed
-        first: 2026-01-15T00:00:50Z  last: 2026-01-15T00:00:50Z
-        example: connection from 10.0.0.8:443 delayed
-      1 debug listening on <ip>
-        first: 2026-01-15T00:00:00Z  last: 2026-01-15T00:00:00Z
-        example: listening on 127.0.0.1:8080
-      1 info  request <n> completed in <n>
-        first: 2026-01-15T00:00:10Z  last: 2026-01-15T00:00:10Z
-        example: request 42 completed in 15ms
-      1 fatal worker <uuid> stopped
-        first: 2026-01-15T00:02:00Z  last: 2026-01-15T00:02:00Z
-        example: worker 550e8400-e29b-41d4-a716-446655440000 stopped
-
-Busiest warn-or-above minute
-  2026-01-15T00:01:00Z  10
-```
 
 ### `filter`
 
@@ -213,6 +200,26 @@ Malformed JSON, non-object JSON, and objects without numeric `level` or string
 `msg` are unparsed for `summary`. Other commands ignore them. Unknown numeric
 levels map down to the closest bunyan level. Invalid timestamps do not reject
 an otherwise valid record.
+
+## Architecture
+
+`input.rs` streams plain or gzip data and skips lines larger than 1 MiB.
+`lib.rs` parses each line as a Bunyan record, using `level.rs` for severity
+and `time.rs` for timestamps.
+`normalize.rs` turns messages into templates for `summary` and `bursts`.
+`report.rs` caps the groups, templates, and time buckets it retains.
+`main.rs` writes summary and burst reports or streams raw `filter` matches.
+
+## Run tests
+
+```sh
+cargo fmt --check
+cargo clippy --locked --all-targets -- -D warnings
+cargo test --locked
+```
+
+The tests cover record parsing, template normalization, report limits, gzip
+and stream input, raw-byte filtering, and exit statuses.
 
 ## License
 
